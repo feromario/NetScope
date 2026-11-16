@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "My Extension",
+    "description": "this is a new desription.",
+    "version": "1.0",
+    "action": {
+        "default_icon": "germ-off.png",
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "activeTab"
+    ]
+}
