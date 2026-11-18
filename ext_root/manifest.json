@@ -9,5 +9,16 @@
     },
     "permissions": [
         "activeTab"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.google.com/search*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
     ]
 }
