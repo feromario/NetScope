@@ -12,6 +12,8 @@
             .filter(Boolean)
             .slice(0, maxResults);
 
+        window.netscopeSearchResultUrls = links.map((link) => link.href);
+
         links.forEach((link) => {
             if (link.dataset.netscopeDescriptionAdded) {
                 return;
