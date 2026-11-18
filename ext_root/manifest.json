@@ -1,14 +1,15 @@
 {
     "manifest_version": 3,
-    "name": "My Extension",
-    "description": "this is a new desription.",
+    "name": "NetScope",
+    "description": "A lightweight companion for Google Search.",
     "version": "1.0",
     "action": {
         "default_icon": "germ-off.png",
         "default_popup": "popup.html"
     },
     "permissions": [
-        "activeTab"
+        "activeTab",
+        "storage"
     ],
     "content_scripts": [
         {

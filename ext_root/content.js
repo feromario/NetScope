@@ -2,8 +2,13 @@
     const descriptionClass = "netscope-result-description";
     // Keep the badge and URL list limited to the first ten linked results.
     const maxResults = 10;
+    let extensionEnabled = false;
 
     function addResultDescriptions() {
+        if (!extensionEnabled) {
+            return;
+        }
+
         // Ignore Google pages that aren't showing a query's search results.
         if (window.location.pathname !== "/search" || !new URLSearchParams(window.location.search).has("q")) {
             return;
@@ -45,7 +50,35 @@
         });
     }
 
-    addResultDescriptions();
+    function setExtensionEnabled(enabled) {
+        extensionEnabled = enabled;
+        if (enabled) {
+            addResultDescriptions();
+            return;
+        }
+
+        document.querySelectorAll(`.${descriptionClass}`).forEach((description) => description.remove());
+        document.querySelectorAll("[data-netscope-description-added]").forEach((link) => {
+            delete link.dataset.netscopeDescriptionAdded;
+        });
+        window.netscopeSearchResultUrls = [];
+    }
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === "local" && changes.enabled) {
+            setExtensionEnabled(changes.enabled.newValue !== false);
+        }
+    });
+
+    chrome.storage.local.get({ enabled: true }, (settings) => {
+        if (chrome.runtime.lastError) {
+            console.error("NetScope could not load its enabled state:", chrome.runtime.lastError.message);
+            return;
+        }
+
+        setExtensionEnabled(settings.enabled !== false);
+    });
+
     // Google can append or replace result cards after document_idle.
     new MutationObserver(addResultDescriptions).observe(document.documentElement, {
         childList: true,
