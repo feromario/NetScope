@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "NetScope",
+    "description": "A lightweight companion for Google Search.",
+    "version": "1.0",
+    "action": {
+        "default_icon": "germ-off.png",
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "activeTab",
+        "storage"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.google.com/search*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}

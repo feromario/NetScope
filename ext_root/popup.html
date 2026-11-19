@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NetScope</title>
+        <link rel="stylesheet" href="popup.css">
+    </head>
+    <body>
+        <main class="popup-shell">
+            <header class="toolbar">
+                <span id="status" class="status" role="status" aria-live="polite">LOADING</span>
+                <button id="toggle" class="power-toggle" type="button" aria-pressed="true" disabled>
+                    <span id="toggle-label">LOADING</span>
+                    <span class="toggle-rail" aria-hidden="true">
+                        <span class="toggle-knob"></span>
+                    </span>
+                </button>
+            </header>
+            <section class="brand" aria-labelledby="brand-name">
+                <p class="eyebrow">Your browser search companion</p>
+                <h1 id="brand-name">Net<span>Scope</span></h1>
+                <p class="description">
+                    We will let you know if the website you are about to visit is safe or not.
+                </p>
+            </section>
+        </main>
+        <script src="popup.js"></script>
+    </body>
+</html>
