@@ -27,6 +27,12 @@
         }
 
         renderState(settings.enabled !== false);
+        chrome.runtime.sendMessage({ type: "analyzerHealth" }, (health) => {
+            if (chrome.runtime.lastError || !health || !health.ok) {
+                status.textContent = "ANALYZER OFFLINE";
+                status.dataset.error = "true";
+            }
+        });
     });
 
     toggle.addEventListener("click", () => {

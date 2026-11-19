@@ -4,7 +4,7 @@ public enum RiskArea {
     REPUTATION(50),
     REDIRECTS(15),
     DOMAIN(15),
-    CONNECTION(10),
+    CONNECTION(20),
     PAGE_INDICATORS(30);
 
     private final int pointCap;

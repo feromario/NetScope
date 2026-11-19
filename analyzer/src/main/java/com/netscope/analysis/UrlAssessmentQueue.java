@@ -2,11 +2,9 @@ package com.netscope.analysis;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 public final class UrlAssessmentQueue {
     public static final int MAX_SEARCH_RESULTS = 10;
@@ -15,8 +13,8 @@ public final class UrlAssessmentQueue {
             Comparator.comparingInt(UrlAssessmentJob::getPriority).reversed()
                     .thenComparingInt(UrlAssessmentJob::getSearchPosition)
                     .thenComparingLong(UrlAssessmentJob::getSequence));
-    private final Set<String> seenUrls = new HashSet<>();
-    private final Set<Integer> occupiedPositions = new HashSet<>();
+    private final List<String> seenUrls = new ArrayList<>();
+    private final boolean[] occupiedPositions = new boolean[MAX_SEARCH_RESULTS];
     private long nextSequence;
 
     public synchronized int enqueueTopResults(List<String> resultUrls) {
@@ -44,27 +42,31 @@ public final class UrlAssessmentQueue {
             throw new IllegalArgumentException("Search position must be between 0 and 9");
         }
         String key = WebUrl.canonicalKey(url);
-        if (seenUrls.contains(key)) {
+        if (hasSeenUrl(key)) {
             return false;
         }
-        if (occupiedPositions.contains(searchPosition)) {
+        if (occupiedPositions[searchPosition]) {
             throw new IllegalArgumentException("Search position is already occupied: " + searchPosition);
         }
         return enqueueValidated(url, key, searchPosition, priority);
     }
 
     private boolean enqueueValidated(String url, String key, int searchPosition, int priority) {
-        if (seenUrls.contains(key)) {
+        if (hasSeenUrl(key)) {
             return false;
         }
-        if (occupiedPositions.contains(searchPosition)) {
+        if (occupiedPositions[searchPosition]) {
             throw new IllegalArgumentException("Search position is already occupied: " + searchPosition);
         }
 
         jobs.add(new UrlAssessmentJob(url, searchPosition, priority, nextSequence++));
         seenUrls.add(key);
-        occupiedPositions.add(searchPosition);
+        occupiedPositions[searchPosition] = true;
         return true;
+    }
+
+    private boolean hasSeenUrl(String key) {
+        return seenUrls.contains(key);
     }
 
     public synchronized Optional<UrlAssessmentJob> dequeue() {

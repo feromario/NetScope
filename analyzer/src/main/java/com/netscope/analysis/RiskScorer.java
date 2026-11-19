@@ -2,12 +2,8 @@ package com.netscope.analysis;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 public final class RiskScorer {
@@ -15,23 +11,25 @@ public final class RiskScorer {
         WebUrl.canonicalKey(url);
         Objects.requireNonNull(concerns, "concerns");
 
-        Map<RiskArea, Integer> areaPoints = new EnumMap<>(RiskArea.class);
-        Set<String> concernIds = new HashSet<>();
+        int[] areaPoints = new int[RiskArea.values().length];
+        List<String> concernIds = new ArrayList<>();
         List<RiskConcern> recordedConcerns = new ArrayList<>();
 
         for (RiskConcern concern : concerns) {
             Objects.requireNonNull(concern, "concern");
-            if (!concernIds.add(concern.getId())) {
+            if (concernIds.contains(concern.getId())) {
                 throw new IllegalArgumentException("Duplicate concern id: " + concern.getId());
             }
-            int current = areaPoints.containsKey(concern.getArea()) ? areaPoints.get(concern.getArea()) : 0;
+            concernIds.add(concern.getId());
+            int areaIndex = concern.getArea().ordinal();
+            int current = areaPoints[areaIndex];
             int capped = Math.min(concern.getArea().getPointCap(), current + concern.getPoints());
-            areaPoints.put(concern.getArea(), capped);
+            areaPoints[areaIndex] = capped;
             recordedConcerns.add(concern);
         }
 
         int score = 0;
-        for (int points : areaPoints.values()) {
+        for (int points : areaPoints) {
             score += points;
         }
         score = Math.min(100, score);

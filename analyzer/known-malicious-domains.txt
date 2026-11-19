@@ -1,0 +1,3 @@
+# One domain per line, for example: suspicious.example
+# Add entries only from a threat-intelligence source you trust.
+# Subdomains of a listed domain are also matched.

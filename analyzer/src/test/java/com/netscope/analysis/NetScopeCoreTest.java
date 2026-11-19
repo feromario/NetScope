@@ -1,16 +1,22 @@
 package com.netscope.analysis;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public final class NetScopeCoreTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         queueUsesPriorityAndSearchOrder();
         queueLimitsAndDeduplicatesTopResults();
         scorerCapsAreasAndMapsThresholds();
         graphRecordsEvidenceAndRedirects();
         analyzerConnectsQueueScoringAndGraph();
+        serverFindsMultipleUrlWarnings();
+        knownMaliciousDomainListIsLoadedAndMatched();
         invalidUrlsAreRejected();
         System.out.println("NetScope core tests passed");
     }
@@ -64,7 +70,12 @@ public final class NetScopeCoreTest {
         EvidenceGraph graph = new EvidenceGraph();
         graph.recordAssessment(assessment);
         graph.recordRedirect("https://source.example", "https://destination.example");
+        int nodeCount = graph.getNodes().size();
+        int edgeCount = graph.getEdges().size();
+        graph.recordRedirect("https://source.example", "https://destination.example");
 
+        assertEquals(nodeCount, graph.getNodes().size());
+        assertEquals(edgeCount, graph.getEdges().size());
         assertTrue(hasEdge(graph, EvidenceGraph.EdgeType.HAS_CONCERN));
         assertTrue(hasEdge(graph, EvidenceGraph.EdgeType.SUPPORTED_BY));
         assertTrue(hasEdge(graph, EvidenceGraph.EdgeType.CONTRIBUTES_TO));
@@ -83,6 +94,46 @@ public final class NetScopeCoreTest {
         assertTrue(hasEdge(analyzer.getEvidenceGraph(), EvidenceGraph.EdgeType.CLASSIFIED_AS));
     }
 
+    private static void serverFindsMultipleUrlWarnings() {
+        String url = "http://bit.ly:8080/verify-login/a%2F?q=1&a=2&b=3&c=4&d=5"
+                + "&next=https%3A%2F%2Fdestination.example";
+        List<RiskConcern> concerns = NetScopeServer.collectConcerns(url);
+        RiskAssessment assessment = new RiskScorer().assess(url, concerns);
+
+        assertEquals(65, assessment.getScore());
+        assertTrue(hasConcern(concerns, "insecure-connection"));
+        assertTrue(hasConcern(concerns, "shortened-url"));
+        assertTrue(hasConcern(concerns, "unusual-port"));
+        assertTrue(hasConcern(concerns, "sensitive-url-term"));
+        assertTrue(hasConcern(concerns, "encoded-url-content"));
+        assertTrue(hasConcern(concerns, "many-query-parameters"));
+        assertTrue(hasConcern(concerns, "redirect-parameter"));
+    }
+
+    private static void knownMaliciousDomainListIsLoadedAndMatched() throws IOException {
+        Path domainFile = Files.createTempFile("netscope-domains", ".txt");
+        try {
+            Files.write(domainFile, Arrays.asList(
+                    "# local test list",
+                    " BAD.EXAMPLE ",
+                    "bad.example # duplicate entry"), StandardCharsets.UTF_8);
+            List<String> domains = NetScopeServer.loadKnownMaliciousDomains(domainFile);
+            assertEquals(1, domains.size());
+
+            List<RiskConcern> concerns = NetScopeServer.collectConcerns(
+                    "https://sub.bad.example/path", domains);
+            RiskAssessment assessment = new RiskScorer().assess("https://sub.bad.example/path", concerns);
+            assertEquals(50, assessment.getScore());
+            assertTrue(hasConcern(concerns, "known-malicious-domain"));
+
+            List<RiskConcern> ipConcerns = NetScopeServer.collectConcerns(
+                    "http://203.0.113.8/path", domains);
+            assertTrue(hasConcern(ipConcerns, "ip-address-host"));
+        } finally {
+            Files.deleteIfExists(domainFile);
+        }
+    }
+
     private static void invalidUrlsAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> new RiskScorer().assess("file:///tmp/x", new ArrayList<>()));
         assertThrows(IllegalArgumentException.class, () -> new UrlAssessmentQueue().enqueue("javascript:alert(1)", 0, 0));
@@ -95,6 +146,15 @@ public final class NetScopeCoreTest {
     private static boolean hasEdge(EvidenceGraph graph, EvidenceGraph.EdgeType type) {
         for (EvidenceGraph.Edge edge : graph.getEdges()) {
             if (edge.getType() == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasConcern(List<RiskConcern> concerns, String id) {
+        for (RiskConcern concern : concerns) {
+            if (concern.getId().equals(id)) {
                 return true;
             }
         }
