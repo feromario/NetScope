@@ -1,53 +1,37 @@
-(() => {
-    const toggle = document.getElementById("toggle");
-    const toggleLabel = document.getElementById("toggle-label");
-    const status = document.getElementById("status");
+const toggle = document.getElementById("toggle");
+const status = document.getElementById("status");
 
-    function renderState(enabled) {
-        toggle.setAttribute("aria-pressed", String(enabled));
-        toggle.setAttribute("aria-label", `Turn NetScope ${enabled ? "off" : "on"}`);
-        toggleLabel.textContent = enabled ? "ON" : "OFF";
-        status.textContent = enabled ? "ACTIVE" : "PAUSED";
-        status.dataset.enabled = String(enabled);
-        delete status.dataset.error;
-        toggle.disabled = false;
+// Updates the button and message to match the saved setting.
+function showState(enabled) {
+    toggle.setAttribute("aria-pressed", String(enabled));
+    toggle.textContent = enabled ? "Turn off" : "Turn on";
+    status.textContent = enabled ? "NetScope is on" : "NetScope is off";
+    toggle.disabled = false;
+}
+
+// Loads the saved setting when the popup opens.
+chrome.storage.local.get({ enabled: true }, (settings) => {
+    if (chrome.runtime.lastError) {
+        status.textContent = "Could not load setting";
+        return;
     }
 
-    function showError(message) {
-        status.textContent = message;
-        status.dataset.error = "true";
-    }
+    showState(settings.enabled !== false);
+});
 
-    chrome.storage.local.get({ enabled: true }, (settings) => {
+// Saves the new setting when the user clicks the button.
+toggle.addEventListener("click", () => {
+    const enabled = toggle.getAttribute("aria-pressed") !== "true";
+    toggle.disabled = true;
+    status.textContent = "Saving...";
+
+    chrome.storage.local.set({ enabled }, () => {
         if (chrome.runtime.lastError) {
-            console.error("NetScope could not load its enabled state:", chrome.runtime.lastError.message);
-            showError("LOAD FAILED");
-            toggle.disabled = true;
+            status.textContent = "Could not save setting";
+            toggle.disabled = false;
             return;
         }
 
-        renderState(settings.enabled !== false);
-        chrome.runtime.sendMessage({ type: "analyzerHealth" }, (health) => {
-            if (chrome.runtime.lastError || !health || !health.ok) {
-                status.textContent = "ANALYZER OFFLINE";
-                status.dataset.error = "true";
-            }
-        });
+        showState(enabled);
     });
-
-    toggle.addEventListener("click", () => {
-        const enabled = toggle.getAttribute("aria-pressed") !== "true";
-        toggle.disabled = true;
-
-        chrome.storage.local.set({ enabled }, () => {
-            if (chrome.runtime.lastError) {
-                console.error("NetScope could not save its enabled state:", chrome.runtime.lastError.message);
-                showError("SAVE FAILED");
-                toggle.disabled = false;
-                return;
-            }
-
-            renderState(enabled);
-        });
-    });
-})();
+});

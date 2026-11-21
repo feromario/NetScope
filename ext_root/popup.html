@@ -1,30 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
+        <!-- Sets the popup's name and connects its styles. -->
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NetScope</title>
         <link rel="stylesheet" href="popup.css">
     </head>
     <body>
-        <main class="popup-shell">
-            <header class="toolbar">
-                <span id="status" class="status" role="status" aria-live="polite">LOADING</span>
-                <button id="toggle" class="power-toggle" type="button" aria-pressed="true" disabled>
-                    <span id="toggle-label">LOADING</span>
-                    <span class="toggle-rail" aria-hidden="true">
-                        <span class="toggle-knob"></span>
-                    </span>
-                </button>
-            </header>
-            <section class="brand" aria-labelledby="brand-name">
-                <p class="eyebrow">Your browser search companion</p>
-                <h1 id="brand-name">Net<span>Scope</span></h1>
-                <p class="description">
-                    We will let you know if the website you are about to visit is safe or not.
-                </p>
-            </section>
+        <!-- Shows the extension's state and its on/off button. -->
+        <main>
+            <h1>NetScope</h1>
+            <p id="status" role="status" aria-live="polite">Loading...</p>
+            <button id="toggle" type="button" aria-pressed="true" disabled>Loading...</button>
         </main>
+        <!-- Connects the button to the saved on/off setting. -->
         <script src="popup.js"></script>
     </body>
 </html>

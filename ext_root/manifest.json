@@ -1,31 +1,11 @@
 {
     "manifest_version": 3,
     "name": "NetScope",
-    "description": "A lightweight companion for Google Search.",
+    "description": "A simple on/off toggle.",
     "version": "1.0",
     "action": {
         "default_icon": "germ-off.png",
         "default_popup": "popup.html"
     },
-    "permissions": [
-        "activeTab",
-        "storage"
-    ],
-    "host_permissions": [
-        "http://127.0.0.1:8765/*"
-    ],
-    "background": {
-        "service_worker": "background.js"
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*.google.com/search*"
-            ],
-            "js": [
-                "content.js"
-            ],
-            "run_at": "document_idle"
-        }
-    ]
+    "permissions": ["storage"]
 }
