@@ -4,36 +4,30 @@
     width: fit-content;
     max-width: 100%;
     margin: 4px 0 8px;
-    padding: 6px 9px;
-    border-left: 4px solid;
-    border-radius: 4px;
-    font: 600 12px/1.4 Arial, sans-serif;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #1f4e79;
+    color: #ffffff;
+    font: 700 12px/1.4 Arial, sans-serif;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    text-align: left !important;
+    writing-mode: horizontal-tb !important;
+    transform: none !important;
 }
 
-/* Uses green for the lower score range. */
+/* Uses solid green for the lower score range. */
 .netscope-risk-low {
-    border-color: #188038;
-    background: #e6f4ea;
-    color: #137333;
+    background: #188038;
 }
 
-/* Uses amber for the middle score range. */
+/* Uses solid yellow for the middle score range with readable dark text. */
 .netscope-risk-medium {
-    border-color: #f9ab00;
-    background: #fef7e0;
-    color: #8f4b00;
+    background: #f9ab00;
+    color: #3c2a00;
 }
 
-/* Uses red for the higher score range. */
+/* Uses solid red for the higher score range. */
 .netscope-risk-high {
-    border-color: #d93025;
-    background: #fce8e6;
-    color: #b31412;
-}
-
-/* Makes a missing Java score visible instead of leaving a blank result. */
-.netscope-risk-error {
-    border-color: #64748b;
-    background: #f1f5f9;
-    color: #334155;
+    background: #d93025;
 }

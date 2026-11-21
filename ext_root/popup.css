@@ -1,14 +1,10 @@
-/* Keeps the popup colors together so they are easy to change. */
+/* Keeps the popup to a simple dark-and-light color pair. */
 :root {
-    --ink: #172436;
-    --muted: #65748a;
-    --surface: #ffffff;
-    --page: #eef3f8;
-    --accent: #168a5b;
-    --line: #e2e8f0;
+    --background: #0b1220;
+    --foreground: #f4f7ff;
 }
 
-/* Sets the popup size, background, and basic text style. */
+/* Sets the popup size and removes the space outside its border. */
 * {
     box-sizing: border-box;
 }
@@ -16,96 +12,113 @@
 body {
     width: 300px;
     margin: 0;
-    padding: 14px;
-    background: var(--page);
-    color: var(--ink);
+    background: var(--background);
+    color: var(--foreground);
     font: 14px "Segoe UI", Arial, sans-serif;
 }
 
-/* Gives the content a simple card layout. */
+/* Places the border directly along the popup's outer edge. */
 .panel {
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--surface);
-    box-shadow: 0 8px 24px rgba(23, 36, 54, 0.1);
+    display: flex;
+    width: 300px;
+    min-height: 210px;
+    flex-direction: column;
+    padding: 12px 16px;
+    border: 1px solid var(--foreground);
+    background: var(--background);
 }
 
-/* Styles the name and short description. */
-.eyebrow {
-    margin: 0 0 6px;
-    color: var(--accent);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+/* Keeps the sliding switch at the top of the popup. */
+.toggle-row {
+    display: flex;
+    min-height: 30px;
+    justify-content: flex-end;
+}
+
+.toggle {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    padding: 3px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--foreground);
+    cursor: pointer;
+}
+
+.toggle-thumb {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--background);
+    transition: transform 180ms ease;
+}
+
+.toggle[aria-checked="true"] .toggle-thumb {
+    transform: translateX(24px);
+}
+
+.toggle:disabled {
+    cursor: wait;
+}
+
+.toggle:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 3px;
+}
+
+/* Centers the logo and description in the remaining popup space. */
+.brand {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
 }
 
 h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: 25px;
     letter-spacing: -0.04em;
 }
 
 .description {
-    margin: 6px 0 18px;
-    color: var(--muted);
-    line-height: 1.45;
-}
-
-/* Aligns the setting label with its on/off button. */
-.setting {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-}
-
-.setting-name,
-.status {
-    margin: 0;
-}
-
-.setting-name {
-    font-weight: 700;
-}
-
-.status {
-    margin-top: 3px;
-    color: var(--muted);
+    max-width: 235px;
+    margin: 12px 0 0;
+    color: var(--foreground);
     font-size: 12px;
+    line-height: 1.5;
 }
 
-/* Makes the toggle button clear and easy to click. */
-button {
-    min-width: 62px;
-    padding: 8px 14px;
+/* Hides live setting updates visually while keeping them accessible. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
     border: 0;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--surface);
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
 }
 
-button[aria-pressed="false"] {
-    background: #64748b;
-}
-
-button:disabled {
-    cursor: wait;
-    opacity: 0.65;
-}
-
-button:focus-visible {
-    outline: 3px solid #f4bf50;
-    outline-offset: 2px;
-}
-
-/* Keeps the safety reminder small and readable. */
-.note {
-    margin: 14px 0 0;
-    color: var(--muted);
-    font-size: 11px;
+@media (prefers-reduced-motion: reduce) {
+    .toggle-thumb {
+        transition: none;
+    }
 }

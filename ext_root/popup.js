@@ -3,9 +3,7 @@ const status = document.getElementById("status");
 
 // Updates the popup to match the saved on/off setting.
 function showState(enabled) {
-    toggle.setAttribute("aria-pressed", String(enabled));
-    toggle.setAttribute("aria-label", `Turn URL scoring ${enabled ? "off" : "on"}`);
-    toggle.textContent = enabled ? "ON" : "OFF";
+    toggle.setAttribute("aria-checked", String(enabled));
     status.textContent = enabled ? "Scoring is on" : "Scoring is off";
     toggle.disabled = false;
 }
@@ -22,7 +20,7 @@ chrome.storage.local.get({ enabled: true }, (settings) => {
 
 // Saves the new setting when the user clicks the toggle.
 toggle.addEventListener("click", () => {
-    const enabled = toggle.getAttribute("aria-pressed") !== "true";
+    const enabled = toggle.getAttribute("aria-checked") !== "true";
     toggle.disabled = true;
     status.textContent = "Saving...";
 

@@ -38,7 +38,7 @@ function showSafetyBox(entry, score, flags) {
     box.setAttribute("role", "status");
     box.setAttribute("aria-label", `${level.label}, ${score} out of 20 points. ${flags}`);
     entry.link.dataset.netscopeScoreAdded = "true";
-    entry.link.insertAdjacentElement("afterend", box);
+    insertSafetyBox(entry, box);
 }
 
 // Shows a visible message when Java cannot return a score.
@@ -52,7 +52,17 @@ function showErrorBox(entry, message) {
     box.title = message;
     box.setAttribute("role", "status");
     entry.link.dataset.netscopeScoreAdded = "true";
-    entry.link.insertAdjacentElement("afterend", box);
+    insertSafetyBox(entry, box);
+}
+
+// Places the box after Google's URL row and before the result title.
+function insertSafetyBox(entry, box) {
+    const siteName = entry.resultCard.querySelector(".VuuXrf");
+    if (siteName && siteName.parentElement) {
+        siteName.parentElement.insertAdjacentElement("afterend", box);
+        return;
+    }
+    entry.link.insertAdjacentElement("beforebegin", box);
 }
 
 // Gets the first ten real website links from Google's result headings.
@@ -60,7 +70,15 @@ function getResultEntries() {
     return Array.from(document.querySelectorAll("#search h3, #rso h3, .MjjYud h3, .g h3"))
         .map((heading) => {
             const link = heading.closest("a");
-            return link ? { link, url: getDestinationUrl(link.href) } : null;
+            if (!link) {
+                return null;
+            }
+            return {
+                heading,
+                link,
+                resultCard: heading.closest(".MjjYud, .g") || link.parentElement,
+                url: getDestinationUrl(link.href)
+            };
         })
         .filter((entry) => entry && /^https?:\/\//i.test(entry.url))
         .slice(0, MAX_RESULTS);
