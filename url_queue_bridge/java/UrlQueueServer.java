@@ -5,10 +5,29 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class UrlQueueServer {
     private static final int MAX_URLS = 10;
     private static final StringQueue URLS = new StringQueue(MAX_URLS);
+
+    // Adds five points when a URL is longer than this limit.
+    private static final int LONG_URL_LIMIT = 20;
+    private static final int LONG_URL_POINTS = 5;
+
+    // Keeps every score at or below twenty points.
+    private static final int MAX_POINTS = 20;
+
+    // Each keyword counts once; its points are at the same position in KEYWORD_POINTS.
+    private static final String[] KEYWORDS = { "password", "login", "verify", "gift", "free" };
+    private static final int[] KEYWORD_POINTS = { 5, 4, 3, 2, 1 };
+
+    // Each domain ending uses the points at the same position in TLD_POINTS.
+    private static final String[] TLDS = { ".com", ".net", ".org", ".info", ".biz" };
+    private static final int[] TLD_POINTS = { 1, 2, 3, 4, 5 };
+
+    // Gives unlisted domain endings two points.
+    private static final int OTHER_TLD_POINTS = 2;
 
     // Starts a local server that receives and displays search-result URLs.
     public static void main(String[] args) throws IOException {
@@ -16,6 +35,7 @@ public class UrlQueueServer {
         server.createContext("/urls", UrlQueueServer::receiveUrls);
         server.createContext("/queue", UrlQueueServer::showQueue);
         server.createContext("/next", UrlQueueServer::takeNext);
+        server.createContext("/analyze", UrlQueueServer::analyzeQueue);
         server.start();
         System.out.println("URL queue listening at http://127.0.0.1:8766");
     }
@@ -81,6 +101,82 @@ public class UrlQueueServer {
         }
         String url = URLS.dequeue();
         send(exchange, url == null ? 404 : 200, url == null ? "Queue is empty." : url);
+    }
+
+    // Scores each queued URL in order and removes it after scoring.
+    private static void analyzeQueue(HttpExchange exchange) throws IOException {
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            send(exchange, 405, "Use GET to analyze the queue.");
+            return;
+        }
+
+        StringBuilder results = new StringBuilder();
+        String url;
+        while ((url = URLS.dequeue()) != null) {
+            if (results.length() > 0) {
+                results.append('\n');
+            }
+            results.append(analyzeUrl(url));
+        }
+
+        if (results.length() == 0) {
+            send(exchange, 404, "Queue is empty.");
+            return;
+        }
+        send(exchange, 200, results.toString());
+    }
+
+    // Adds points for length, matching keywords, and the URL's domain ending.
+    private static String analyzeUrl(String url) {
+        int points = 0;
+        String lowerUrl = url.toLowerCase(Locale.ROOT);
+        StringBuilder flags = new StringBuilder();
+
+        if (url.length() > LONG_URL_LIMIT) {
+            points += LONG_URL_POINTS;
+            addFlag(flags, "long URL +" + LONG_URL_POINTS);
+        }
+        for (int index = 0; index < KEYWORDS.length; index++) {
+            if (lowerUrl.contains(KEYWORDS[index])) {
+                points += KEYWORD_POINTS[index];
+                addFlag(flags, KEYWORDS[index] + " +" + KEYWORD_POINTS[index]);
+            }
+        }
+
+        String tld = getTopLevelDomain(url);
+        int tldPoints = getTldPoints(tld);
+        points += tldPoints;
+        addFlag(flags, "TLD " + tld + " +" + tldPoints);
+
+        return url + " | " + Math.min(points, MAX_POINTS) + "/" + MAX_POINTS + " | " + flags;
+    }
+
+    // Finds the final domain part, such as ".com", in a URL.
+    private static String getTopLevelDomain(String url) {
+        String host = URI.create(url).getHost();
+        if (host == null || !host.contains(".")) {
+            return "other";
+        }
+        int lastDot = host.lastIndexOf('.');
+        return host.substring(lastDot).toLowerCase(Locale.ROOT);
+    }
+
+    // Uses the listed TLD points or the default points for other endings.
+    private static int getTldPoints(String tld) {
+        for (int index = 0; index < TLDS.length; index++) {
+            if (TLDS[index].equals(tld)) {
+                return TLD_POINTS[index];
+            }
+        }
+        return OTHER_TLD_POINTS;
+    }
+
+    // Adds another explanation to the comma-separated flag list.
+    private static void addFlag(StringBuilder flags, String flag) {
+        if (flags.length() > 0) {
+            flags.append(", ");
+        }
+        flags.append(flag);
     }
 
     // Sends a plain-text response to the browser or a local test.
