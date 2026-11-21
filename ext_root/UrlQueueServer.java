@@ -33,8 +33,6 @@ public class UrlQueueServer {
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8766), 0);
         server.createContext("/urls", UrlQueueServer::receiveUrls);
-        server.createContext("/queue", UrlQueueServer::showQueue);
-        server.createContext("/next", UrlQueueServer::takeNext);
         server.createContext("/analyze", UrlQueueServer::analyzeQueue);
         server.start();
         System.out.println("URL queue listening at http://127.0.0.1:8766");
@@ -42,6 +40,14 @@ public class UrlQueueServer {
 
     // Replaces the queue with up to ten URLs sent by the browser extension.
     private static void receiveUrls(HttpExchange exchange) throws IOException {
+        if (!isAllowedOrigin(exchange)) {
+            send(exchange, 403, "Only the browser extension can send URLs.");
+            return;
+        }
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            send(exchange, 204, "");
+            return;
+        }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             send(exchange, 405, "Use POST to add URLs.");
             return;
@@ -84,27 +90,16 @@ public class UrlQueueServer {
         }
     }
 
-    // Returns the current queue as one URL per line.
-    private static void showQueue(HttpExchange exchange) throws IOException {
-        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            send(exchange, 405, "Use GET to read the queue.");
-            return;
-        }
-        send(exchange, 200, URLS.toText());
-    }
-
-    // Removes and returns the oldest URL in the queue.
-    private static void takeNext(HttpExchange exchange) throws IOException {
-        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            send(exchange, 405, "Use GET to take the next URL.");
-            return;
-        }
-        String url = URLS.dequeue();
-        send(exchange, url == null ? 404 : 200, url == null ? "Queue is empty." : url);
-    }
-
     // Scores each queued URL in order and removes it after scoring.
     private static void analyzeQueue(HttpExchange exchange) throws IOException {
+        if (!isAllowedOrigin(exchange)) {
+            send(exchange, 403, "Only the browser extension can request scores.");
+            return;
+        }
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            send(exchange, 204, "");
+            return;
+        }
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             send(exchange, 405, "Use GET to analyze the queue.");
             return;
@@ -179,10 +174,37 @@ public class UrlQueueServer {
         flags.append(flag);
     }
 
+    // Allows local tools and requests from Chrome extensions.
+    private static boolean isAllowedOrigin(HttpExchange exchange) {
+        String origin = exchange.getRequestHeaders().getFirst("Origin");
+        return origin == null || origin.startsWith("chrome-extension://");
+    }
+
+    // Adds the response headers needed by the browser extension.
+    private static void addCorsHeaders(HttpExchange exchange) {
+        String origin = exchange.getRequestHeaders().getFirst("Origin");
+        if (origin != null && origin.startsWith("chrome-extension://")) {
+            exchange.getResponseHeaders().set("Access-Control-Allow-Origin", origin);
+            exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+            exchange.getResponseHeaders().set("Vary", "Origin");
+        }
+        if ("true".equalsIgnoreCase(
+                exchange.getRequestHeaders().getFirst("Access-Control-Request-Private-Network"))) {
+            exchange.getResponseHeaders().set("Access-Control-Allow-Private-Network", "true");
+        }
+    }
+
     // Sends a plain-text response to the browser or a local test.
     private static void send(HttpExchange exchange, int status, String message) throws IOException {
         byte[] response = message.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+        addCorsHeaders(exchange);
+        if (status == 204) {
+            exchange.sendResponseHeaders(status, -1);
+            exchange.close();
+            return;
+        }
         exchange.sendResponseHeaders(status, response.length);
         try (OutputStream output = exchange.getResponseBody()) {
             output.write(response);
@@ -195,6 +217,7 @@ public class UrlQueueServer {
         private int first;
         private int size;
 
+        // Creates a queue with room for the first ten URLs.
         private StringQueue(int capacity) {
             items = new String[capacity];
         }
@@ -228,18 +251,6 @@ public class UrlQueueServer {
             first = (first + 1) % items.length;
             size--;
             return url;
-        }
-
-        // Shows the URLs in queue order without removing them.
-        private synchronized String toText() {
-            StringBuilder result = new StringBuilder();
-            for (int index = 0; index < size; index++) {
-                if (index > 0) {
-                    result.append('\n');
-                }
-                result.append(items[(first + index) % items.length]);
-            }
-            return result.toString();
         }
     }
 }

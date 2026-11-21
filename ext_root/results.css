@@ -1,0 +1,39 @@
+/* Gives every safety score box a compact, readable shape. */
+.netscope-safety-box {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 4px 0 8px;
+    padding: 6px 9px;
+    border-left: 4px solid;
+    border-radius: 4px;
+    font: 600 12px/1.4 Arial, sans-serif;
+}
+
+/* Uses green for the lower score range. */
+.netscope-risk-low {
+    border-color: #188038;
+    background: #e6f4ea;
+    color: #137333;
+}
+
+/* Uses amber for the middle score range. */
+.netscope-risk-medium {
+    border-color: #f9ab00;
+    background: #fef7e0;
+    color: #8f4b00;
+}
+
+/* Uses red for the higher score range. */
+.netscope-risk-high {
+    border-color: #d93025;
+    background: #fce8e6;
+    color: #b31412;
+}
+
+/* Makes a missing Java score visible instead of leaving a blank result. */
+.netscope-risk-error {
+    border-color: #64748b;
+    background: #f1f5f9;
+    color: #334155;
+}

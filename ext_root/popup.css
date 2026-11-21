@@ -1,54 +1,111 @@
-/* Stores the small set of colors used by the popup. */
+/* Keeps the popup colors together so they are easy to change. */
 :root {
-    --background: #08111f;
-    --text: #f3f8ff;
-    --accent: #35e58b;
-    --muted: #a4afc2;
+    --ink: #172436;
+    --muted: #65748a;
+    --surface: #ffffff;
+    --page: #eef3f8;
+    --accent: #168a5b;
+    --line: #e2e8f0;
 }
 
-/* Gives the popup a compact size and readable colors. */
+/* Sets the popup size, background, and basic text style. */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    width: 240px;
+    width: 300px;
     margin: 0;
-    padding: 16px;
-    background: var(--background);
-    color: var(--text);
-    font: 14px Arial, sans-serif;
+    padding: 14px;
+    background: var(--page);
+    color: var(--ink);
+    font: 14px "Segoe UI", Arial, sans-serif;
 }
 
-/* Adds a little space under the popup title. */
+/* Gives the content a simple card layout. */
+.panel {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(23, 36, 54, 0.1);
+}
+
+/* Styles the name and short description. */
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
 h1 {
-    margin: 0 0 12px;
-    font-size: 20px;
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.04em;
 }
 
-/* Makes the current on/off state easier to distinguish. */
-#status {
-    margin: 0 0 12px;
+.description {
+    margin: 6px 0 18px;
     color: var(--muted);
+    line-height: 1.45;
 }
 
-/* Makes the button easy to read and click. */
+/* Aligns the setting label with its on/off button. */
+.setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.setting-name,
+.status {
+    margin: 0;
+}
+
+.setting-name {
+    font-weight: 700;
+}
+
+.status {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* Makes the toggle button clear and easy to click. */
 button {
-    width: 100%;
-    padding: 10px;
+    min-width: 62px;
+    padding: 8px 14px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 999px;
     background: var(--accent);
-    color: var(--background);
+    color: var(--surface);
     font: inherit;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
 }
 
-/* Shows when the button is waiting for storage. */
-button:disabled {
-    cursor: wait;
-    opacity: 0.6;
+button[aria-pressed="false"] {
+    background: #64748b;
 }
 
-/* Makes keyboard focus visible. */
+button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 button:focus-visible {
-    outline: 2px solid var(--text);
+    outline: 3px solid #f4bf50;
     outline-offset: 2px;
+}
+
+/* Keeps the safety reminder small and readable. */
+.note {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 11px;
 }

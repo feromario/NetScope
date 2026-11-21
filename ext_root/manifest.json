@@ -1,11 +1,24 @@
 {
     "manifest_version": 3,
     "name": "NetScope",
-    "description": "A simple on/off toggle.",
+    "description": "Scores the first ten Google search result URLs.",
     "version": "1.0",
     "action": {
         "default_icon": "germ-off.png",
+        "default_title": "NetScope URL scores",
         "default_popup": "popup.html"
     },
-    "permissions": ["storage"]
+    "permissions": ["storage"],
+    "host_permissions": ["http://127.0.0.1:8766/*"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://*.google.com/search*"],
+            "js": ["content.js"],
+            "css": ["results.css"],
+            "run_at": "document_idle"
+        }
+    ]
 }
