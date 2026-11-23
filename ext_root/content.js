@@ -17,12 +17,12 @@ function getDestinationUrl(href) {
 // Chooses the short label and color for a score.
 function getRiskLevel(score) {
     if (score <= 6) {
-        return { label: "Lower risk", className: "netscope-risk-low" };
+        return { label: "Low Risk", className: "netscope-risk-low" };
     }
     if (score <= 13) {
-        return { label: "Caution", className: "netscope-risk-medium" };
+        return { label: "Medium Risk", className: "netscope-risk-medium" };
     }
-    return { label: "Higher risk", className: "netscope-risk-high" };
+    return { label: "High Risk", className: "netscope-risk-high" };
 }
 
 // Adds a scored result box below its link.

@@ -25,6 +25,13 @@
                 <p class="description">Scores up to ten Google search links using simple URL clues.</p>
             </header>
 
+            <!-- Shows links to the three lowest-scoring URLs from the latest analysis. -->
+            <section class="top-results" aria-labelledby="top-results-heading">
+                <h2 id="top-results-heading">Lowest 3 scores</h2>
+                <p id="top-results-empty">No scored URLs yet.</p>
+                <ol id="top-results-list" class="top-results-list" hidden></ol>
+            </section>
+
             <!-- Announces setting changes to assistive technology without adding visible text. -->
             <p id="status" class="visually-hidden" role="status" aria-live="polite">Loading...</p>
         </main>

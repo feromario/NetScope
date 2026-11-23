@@ -1,0 +1,33 @@
+/* Gives every safety score box a compact, readable shape. */
+.netscope-safety-box {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 4px 0 8px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #1f4e79;
+    color: #ffffff;
+    font: 700 12px/1.4 Arial, sans-serif;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    text-align: left !important;
+    writing-mode: horizontal-tb !important;
+    transform: none !important;
+}
+
+/* Uses solid green for the lower score range. */
+.netscope-risk-low {
+    background: #188038;
+}
+
+/* Uses solid yellow for the middle score range with readable dark text. */
+.netscope-risk-medium {
+    background: #f9ab00;
+    color: #3c2a00;
+}
+
+/* Uses solid red for the higher score range. */
+.netscope-risk-high {
+    background: #d93025;
+}

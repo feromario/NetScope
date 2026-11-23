@@ -1,0 +1,124 @@
+/* Keeps the popup to a simple dark-and-light color pair. */
+:root {
+    --background: #0b1220;
+    --foreground: #f4f7ff;
+}
+
+/* Sets the popup size and removes the space outside its border. */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 300px;
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font: 14px "Segoe UI", Arial, sans-serif;
+}
+
+/* Places the border directly along the popup's outer edge. */
+.panel {
+    display: flex;
+    width: 300px;
+    min-height: 210px;
+    flex-direction: column;
+    padding: 12px 16px;
+    border: 1px solid var(--foreground);
+    background: var(--background);
+}
+
+/* Keeps the sliding switch at the top of the popup. */
+.toggle-row {
+    display: flex;
+    min-height: 30px;
+    justify-content: flex-end;
+}
+
+.toggle {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    padding: 3px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--foreground);
+    cursor: pointer;
+}
+
+.toggle-thumb {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--background);
+    transition: transform 180ms ease;
+}
+
+.toggle[aria-checked="true"] .toggle-thumb {
+    transform: translateX(24px);
+}
+
+.toggle:disabled {
+    cursor: wait;
+}
+
+.toggle:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 3px;
+}
+
+/* Centers the logo and description in the remaining popup space. */
+.brand {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+}
+
+h1 {
+    margin: 0;
+    font-size: 25px;
+    letter-spacing: -0.04em;
+}
+
+.description {
+    max-width: 235px;
+    margin: 12px 0 0;
+    color: var(--foreground);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Hides live setting updates visually while keeping them accessible. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toggle-thumb {
+        transition: none;
+    }
+}

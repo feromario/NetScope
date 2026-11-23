@@ -5,11 +5,15 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class UrlQueueServer {
     private static final int MAX_URLS = 10;
     private static final StringQueue URLS = new StringQueue(MAX_URLS);
+    private static volatile List<HeapSort.ScoredUrl> TOP_RESULTS = Collections.emptyList();
 
     // Adds five points when a URL is longer than this limit.
     private static final int LONG_URL_LIMIT = 20;
@@ -34,6 +38,7 @@ public class UrlQueueServer {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8766), 0);
         server.createContext("/urls", UrlQueueServer::receiveUrls);
         server.createContext("/analyze", UrlQueueServer::analyzeQueue);
+        server.createContext("/top", UrlQueueServer::getTopResults);
         server.start();
         System.out.println("URL queue listening at http://127.0.0.1:8766");
     }
@@ -90,7 +95,7 @@ public class UrlQueueServer {
         }
     }
 
-    // Scores each queued URL in order and removes it after scoring.
+    // Scores each queued URL, keeps all scores for Google, and saves the three lowest for the popup.
     private static void analyzeQueue(HttpExchange exchange) throws IOException {
         if (!isAllowedOrigin(exchange)) {
             send(exchange, 403, "Only the browser extension can request scores.");
@@ -105,24 +110,66 @@ public class UrlQueueServer {
             return;
         }
 
-        StringBuilder results = new StringBuilder();
+        List<HeapSort.ScoredUrl> scoredResults = new ArrayList<>();
         String url;
         while ((url = URLS.dequeue()) != null) {
+            scoredResults.add(analyzeUrl(url));
+        }
+
+        if (scoredResults.isEmpty()) {
+            TOP_RESULTS = Collections.emptyList();
+            send(exchange, 404, "Queue is empty.");
+            return;
+        }
+
+        // Keep the full set for the existing Google-page display.
+        StringBuilder results = new StringBuilder();
+        for (HeapSort.ScoredUrl result : scoredResults) {
             if (results.length() > 0) {
                 results.append('\n');
             }
-            results.append(analyzeUrl(url));
+            results.append(formatResult(result));
         }
 
-        if (results.length() == 0) {
-            send(exchange, 404, "Queue is empty.");
+        // Save the min-heap's three lowest scores for the extension popup.
+        TOP_RESULTS = Collections.unmodifiableList(
+                HeapSort.getLowestScoringUrls(scoredResults, 3));
+        send(exchange, 200, results.toString());
+    }
+
+    // Returns the most recently analyzed three lowest-scoring URLs to the popup.
+    private static void getTopResults(HttpExchange exchange) throws IOException {
+        if (!isAllowedOrigin(exchange)) {
+            send(exchange, 403, "Only the browser extension can request scores.");
             return;
+        }
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            send(exchange, 204, "");
+            return;
+        }
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            send(exchange, 405, "Use GET to request the lowest-scoring URLs.");
+            return;
+        }
+
+        List<HeapSort.ScoredUrl> topResults = TOP_RESULTS;
+        if (topResults.isEmpty()) {
+            send(exchange, 404, "No scored URLs are available.");
+            return;
+        }
+
+        StringBuilder results = new StringBuilder();
+        for (HeapSort.ScoredUrl result : topResults) {
+            if (results.length() > 0) {
+                results.append('\n');
+            }
+            results.append(formatResult(result));
         }
         send(exchange, 200, results.toString());
     }
 
     // Adds points for length, matching keywords, and the URL's domain ending.
-    private static String analyzeUrl(String url) {
+    private static HeapSort.ScoredUrl analyzeUrl(String url) {
         int points = 0;
         String lowerUrl = url.toLowerCase(Locale.ROOT);
         StringBuilder flags = new StringBuilder();
@@ -143,7 +190,13 @@ public class UrlQueueServer {
         points += tldPoints;
         addFlag(flags, "TLD " + tld + " +" + tldPoints);
 
-        return url + " | " + Math.min(points, MAX_POINTS) + "/" + MAX_POINTS + " | " + flags;
+        return new HeapSort.ScoredUrl(url, Math.min(points, MAX_POINTS), flags.toString());
+    }
+
+    // Keeps the existing plain-text score format used by the Google-page content script.
+    private static String formatResult(HeapSort.ScoredUrl result) {
+        return result.getUrl() + " | " + result.getScore() + "/" + MAX_POINTS
+                + " | " + result.getFlags();
     }
 
     // Finds the final domain part, such as ".com", in a URL.

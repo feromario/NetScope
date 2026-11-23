@@ -104,6 +104,42 @@ h1 {
     line-height: 1.5;
 }
 
+/* Displays the latest lowest-scoring URLs below the extension description. */
+.top-results {
+    width: 100%;
+    padding-top: 12px;
+    border-top: 1px solid var(--foreground);
+}
+
+.top-results h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.top-results p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.top-results-list {
+    margin: 0;
+    padding-left: 22px;
+    font-size: 12px;
+}
+
+.top-results-list li {
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+}
+
+.top-results-list a {
+    color: var(--foreground);
+}
+
+.result-score {
+    white-space: nowrap;
+}
+
 /* Hides live setting updates visually while keeping them accessible. */
 .visually-hidden {
     position: absolute;

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Sets the popup name and connects its styles. -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NetScope</title>
+        <link rel="stylesheet" href="popup.css">
+    </head>
+    <body>
+        <main class="panel">
+            <!-- Shows and controls the on/off switch at the top. -->
+            <div class="toggle-row">
+                <button id="toggle" class="toggle" type="button" role="switch" aria-label="URL scoring" aria-checked="true" disabled>
+                    <span class="toggle-thumb" aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <!-- Centers the NetScope logo and its description. -->
+            <header class="brand">
+                <div class="logo">
+                    <img class="logo-icon" src="germ-off.png" alt="" aria-hidden="true">
+                    <h1>NetScope</h1>
+                </div>
+                <p class="description">Scores up to ten Google search links using simple URL clues.</p>
+            </header>
+
+            <!-- Announces setting changes to assistive technology without adding visible text. -->
+            <p id="status" class="visually-hidden" role="status" aria-live="polite">Loading...</p>
+        </main>
+        <!-- Connects the switch to the saved setting. -->
+        <script src="popup.js"></script>
+    </body>
+</html>
