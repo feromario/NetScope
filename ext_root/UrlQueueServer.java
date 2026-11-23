@@ -11,20 +11,40 @@ public class UrlQueueServer {
     private static final int MAX_URLS = 10;
     private static final StringQueue URLS = new StringQueue(MAX_URLS);
 
-    // Adds five points when a URL is longer than this limit.
-    private static final int LONG_URL_LIMIT = 20;
-    private static final int LONG_URL_POINTS = 5;
-
     // Keeps every score at or below twenty points.
     private static final int MAX_POINTS = 20;
 
     // Each keyword counts once; its points are at the same position in KEYWORD_POINTS.
-    private static final String[] KEYWORDS = { "password", "login", "verify", "gift", "free" };
-    private static final int[] KEYWORD_POINTS = { 5, 4, 3, 2, 1 };
+    private static final String[] KEYWORDS = { 
+        "login", "signin", "verify", "secure", "update",
+        "account", "password", "recover", "locked", "urgent",
+        "alert", "expired", "overdue", "limited", "billing",
+        "invoice", "payment", "refund", "delivery", "tracking",
+        "support", "free", "bonus", "claim", "download",
+        "install", "update", "upgrade", "activate", "register" 
+    };
+    private static final int[] KEYWORD_POINTS = {  
+        2, 2, 4, 3, 2,
+        2, 3, 4, 5, 5,
+        4, 4, 5, 4, 3,
+        3, 3, 4, 3, 3,
+        2, 3, 4, 5, 2,
+        3, 2, 2, 2, 1
+    };
 
     // Each domain ending uses the points at the same position in TLD_POINTS.
-    private static final String[] TLDS = { ".com", ".net", ".org", ".info", ".biz" };
-    private static final int[] TLD_POINTS = { 1, 2, 3, 4, 5 };
+    private static final String[] TLDS = { 
+        ".com", ".org", ".net", ".edu", ".gov",
+        ".io", ".co", ".ai", ".app", ".dev",
+        ".info", ".biz", ".online", ".shop", ".xyz",
+        ".top", ".icu", ".zip", ".click", ".bond"
+    };
+    private static final int[] TLD_POINTS = { 
+        2, 1, 2, 1, 1,
+        2, 2, 2, 1, 1,
+        3, 3, 3, 2, 4,
+        4, 5, 5, 4, 5
+    };
 
     // Gives unlisted domain endings two points.
     private static final int OTHER_TLD_POINTS = 2;
@@ -127,10 +147,9 @@ public class UrlQueueServer {
         String lowerUrl = url.toLowerCase(Locale.ROOT);
         StringBuilder flags = new StringBuilder();
 
-        if (url.length() > LONG_URL_LIMIT) {
-            points += LONG_URL_POINTS;
-            addFlag(flags, "long URL +" + LONG_URL_POINTS);
-        }
+        int lengthPoints = getUrlLengthPoints(url.length());
+        points += lengthPoints;
+        addFlag(flags, "URL length +" + lengthPoints);
         for (int index = 0; index < KEYWORDS.length; index++) {
             if (lowerUrl.contains(KEYWORDS[index])) {
                 points += KEYWORD_POINTS[index];
@@ -144,6 +163,23 @@ public class UrlQueueServer {
         addFlag(flags, "TLD " + tld + " +" + tldPoints);
 
         return url + " | " + Math.min(points, MAX_POINTS) + "/" + MAX_POINTS + " | " + flags;
+    }
+
+    // Scores URL length in bands; the 55-character boundary belongs to the first band.
+    private static int getUrlLengthPoints(int length) {
+        if (length <= 55) {
+            return 1;
+        }
+        if (length <= 75) {
+            return 2;
+        }
+        if (length <= 100) {
+            return 3;
+        }
+        if (length <= 150) {
+            return 4;
+        }
+        return 5;
     }
 
     // Finds the final domain part, such as ".com", in a URL.
