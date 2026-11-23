@@ -1,7 +1,9 @@
-/* Keeps the popup to a simple dark-and-light color pair. */
+/* Sets the popup colors and the bright accent used for emphasis. */
 :root {
-    --background: #0b1220;
-    --foreground: #f4f7ff;
+    --background: #000000;
+    --foreground: #ffffff;
+    --accent: #39ff14;
+    --toggle-off: #6b6b6b;
 }
 
 /* Sets the popup size and removes the space outside its border. */
@@ -17,14 +19,14 @@ body {
     font: 14px "Segoe UI", Arial, sans-serif;
 }
 
-/* Places the border directly along the popup's outer edge. */
+/* Frames the popup with a neon-green border. */
 .panel {
     display: flex;
     width: 300px;
     min-height: 210px;
     flex-direction: column;
     padding: 12px 16px;
-    border: 1px solid var(--foreground);
+    border: 2px solid var(--accent);
     background: var(--background);
 }
 
@@ -42,8 +44,13 @@ body {
     padding: 3px;
     border: 0;
     border-radius: 999px;
-    background: var(--foreground);
+    background: var(--toggle-off);
     cursor: pointer;
+}
+
+/* Highlights the switch track green while scoring is enabled. */
+.toggle[aria-checked="true"] {
+    background: var(--accent);
 }
 
 .toggle-thumb {
@@ -64,7 +71,7 @@ body {
 }
 
 .toggle:focus-visible {
-    outline: 2px solid var(--foreground);
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
 }
 
@@ -94,6 +101,17 @@ h1 {
     margin: 0;
     font-size: 25px;
     letter-spacing: -0.04em;
+    color: transparent;
+    background: linear-gradient(
+        90deg,
+        var(--accent) 0%,
+        var(--accent) 36%,
+        var(--foreground) 66%,
+        var(--foreground) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .description {
